@@ -21,16 +21,36 @@ cloudinary.v2.config({
 
 // config Redis
 export const redisClient =redis.createClient({
-    password:process.env.redis_pass||"",
+    password:process.env.redis_pass||'',
     socket:{
         host:process.env.redis_host,
-        port: parseInt(process.env.redis_port!) || 18634,
+        port:parseInt(process.env.redis_port||'18634') ,
     }
 
 });
 
-// Redis Connecting
-redisClient.connect().then(()=>console.log("Redis connected")).catch(console.error);
+redisClient.on('error', (err) => {
+    console.error('Redis Client Error:', err);
+    // Don't throw here - just log
+});
+
+redisClient.on('connect', () => {
+    console.log('Redis connected successfully');
+});
+
+redisClient.on('reconnecting', () => {
+    console.log('Redis reconnecting...');
+});
+
+async function connectRedis() {
+    try {
+        await redisClient.connect();
+    } catch (err) {
+        console.error('Failed to connect to Redis:', err);
+        // Implement retry logic or fallback
+    }
+}
+connectRedis();
 
 //Redis db creating
 async function initDB() {
@@ -40,6 +60,8 @@ async function initDB() {
         title varchar(255) not null, 
         description varchar(255) not null,
         thumbnail varchar(255) not null,
+        tags varchar(255)[],
+        year varchar(4) not null,
         created_at timestamp default current_timestamp)`;
 
         await sql`create table if not exists songs(
@@ -49,6 +71,8 @@ async function initDB() {
         thumbnail varchar(255),
         audio varchar(255) not null,
         album_id int references albums(id) on delete set null,
+        year varchar(4) not null,
+        tags varchar(255)[],
         created_at timestamp default current_timestamp)`;
 
         console.log("database initialized");

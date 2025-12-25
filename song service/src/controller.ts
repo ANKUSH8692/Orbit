@@ -27,7 +27,7 @@ export const getAllAlbum=TryCatch(async(req,res)=>{
 });
 
 export const getAllSongs=TryCatch(async(req,res)=>{
-    console.log("hi");
+
     let songs;
     
     const Cache_Exp=1800;//half hour
@@ -52,15 +52,17 @@ export const getAllSongs=TryCatch(async(req,res)=>{
 })
 
 export const getAllSongOfAlbum=TryCatch(async(req,res)=>{
+
     const {id}=req.params;
 
     let album,songs;
 
     const Cache_Exp=1800;//half hour
+
      if(redisClient.isReady){
         const cache_data=await redisClient.get(`album_songs_${id}`);
         if(cache_data){
-            //console.log("cache hit");
+            console.log("cache hit");
             return res.json(JSON.parse(cache_data));
         }
     }
@@ -73,17 +75,17 @@ export const getAllSongOfAlbum=TryCatch(async(req,res)=>{
     }
     songs =await sql `SELECT * FROM songs WHERE album_id=${id}`;
 
-    const response={songs,album};
+    const response={songs,album:album[0]};
     if(redisClient.isReady){
         await redisClient.set(`album_songs_${id}`,JSON.stringify(response),{
             EX:Cache_Exp}
         );
     }
-    //console.log("cache miss");
     res.json(response);
 })
 
 export const getSong=TryCatch(async(req,res)=>{
+
     const {id}=req.params;
 
     let song;

@@ -28,7 +28,7 @@ export const isAuth = async (
 ): Promise<void> => {
     try {
         const token = req.headers.token as string;
-        console.log("Token in middleware:", token);
+  
         if (!token) {
             res.status(401).json({
                 success: false,
@@ -37,7 +37,7 @@ export const isAuth = async (
             return;
 
         }
-        console.log("Verifying token with user service...");
+ 
         const { data } = await axios.get(`${process.env.User_url}/api/v1/user/me`, {
             headers: {
                 token
@@ -45,7 +45,7 @@ export const isAuth = async (
         });
 
         req.user = data;
-        console.log("is authenticated user:", req.user);
+
         next();
     } catch (err) {
         res.status(403).send({
